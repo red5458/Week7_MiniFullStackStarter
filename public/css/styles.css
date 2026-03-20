@@ -1,0 +1,66 @@
+:root {
+    --accent-green: #2ecc71;
+    --charcoal: #2e3440;
+    --bg-light: #f4f4f4;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: var(--font-mono);
+}
+
+.mono {
+    font-family: var(--font-mono);
+}
+
+.bg-charcoal {
+    background-color: var(--charcoal) !important;
+}
+
+.text-green {
+    color: var(--accent-green) !important;
+}
+
+/* Navigation */
+.navbar {
+    padding: 20px 0;
+}
+
+.border-bottom-green {
+    border-bottom: 5px solid var(--accent-green) !important;
+}
+
+/* Custom Cards */
+.main-card {
+    background: white;
+    border: none;
+    border-left: 5px solid var(--accent-green);
+    padding: 30px;
+}
+
+/* Inputs & Buttons */
+.form-control:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
+}
+
+.btn-green {
+    background-color: var(--accent-green);
+    color: white;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.btn-green:hover {
+    background-color: #27ae60;
+    color: white;
+}
+
+/* List Items */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    background: transparent;
+}
