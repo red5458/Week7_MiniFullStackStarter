@@ -4,6 +4,8 @@ const path = require("path");
 require("dotenv").config();
 
 const usersRouter = require("./routes/users");
+const productsRouter = require("./routes/products"); // NEW: Week 10
+const ordersRouter = require("./routes/orders");     // NEW: Week 10
 
 const app = express();
 
@@ -16,6 +18,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // API routes
 app.use("/api/users", usersRouter);
+app.use("/api/products", productsRouter); // NEW: Week 10
+app.use("/api/orders", ordersRouter);     // NEW: Week 10
 
 // Test route
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));

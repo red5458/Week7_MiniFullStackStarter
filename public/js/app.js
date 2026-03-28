@@ -61,4 +61,43 @@ userForm.addEventListener("submit", async (e) => {
     loadUsers();
 });
 
+// ORDERS
+async function loadOrders() {
+    const res = await fetch("/api/orders");
+    const orders = await res.json();
+
+    const orderList = document.getElementById("orderList");
+    orderList.innerHTML = "";
+
+    if (!orders.length) {
+        orderList.innerHTML = `<div class="text-muted small">No orders yet</div>`;
+        return;
+    }
+
+    orders.forEach(order => {
+        const userName = order.user ? order.user.name : "Unknown User";
+        const productNames = order.products.map(p => p.name).join(", ");
+
+        const item = document.createElement("div");
+        item.className = "list-group-item";
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fw-semibold">👤 ${userName}</div>
+                    <div class="text-muted small">📦 Products: ${productNames}</div>
+                    <div class="text-success small fw-bold">💰 Total: ₱${order.totalAmount.toLocaleString()}</div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder('${order._id}')">Delete</button>
+            </div>
+        `;
+        orderList.appendChild(item);
+    });
+}
+
+async function deleteOrder(id) {
+    await fetch(`/api/orders/${id}`, { method: "DELETE" });
+    loadOrders();
+}
+
 loadUsers();
+loadOrders();
