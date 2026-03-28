@@ -5,6 +5,7 @@ This project extends the Week 7 Mini Full-Stack Starter (CRUD + MongoDB) to impl
 
 **Tech Stack:** Node.js · Express · MongoDB Atlas · Mongoose · Bootstrap 5
 
+Render URL: https://week7-minifullstackstarter.onrender.com/
 
 
 ---
