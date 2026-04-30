@@ -26,7 +26,16 @@ function formToObject(form) {
 
 async function requestJson(url, options = {}) {
     const res = await fetch(url, options);
-    const data = await res.json();
+    const text = await res.text();
+    let data = {};
+
+    if (text) {
+        try {
+            data = JSON.parse(text);
+        } catch (error) {
+            throw new Error("Server did not return JSON. Open the app through http://localhost:3000 instead of double-clicking index.html.");
+        }
+    }
 
     if (!res.ok) {
         throw new Error(data.message || data.error || "Request failed");
