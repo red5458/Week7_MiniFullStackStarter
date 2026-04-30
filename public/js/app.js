@@ -1,103 +1,174 @@
-const userForm = document.getElementById("userForm");
+const message = document.getElementById("message");
+const statusBadge = document.getElementById("statusBadge");
+const registerForm = document.getElementById("registerForm");
+const loginForm = document.getElementById("loginForm");
+const sessionInfo = document.getElementById("sessionInfo");
+const logoutBtn = document.getElementById("logoutBtn");
+const profileBtn = document.getElementById("profileBtn");
+const adminBtn = document.getElementById("adminBtn");
+const profileOutput = document.getElementById("profileOutput");
+const adminOutput = document.getElementById("adminOutput");
+const refreshUsersBtn = document.getElementById("refreshUsersBtn");
 const userList = document.getElementById("userList");
-const msg = document.getElementById("msg");
+
+let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
 function showMessage(text, type = "success") {
-    msg.innerHTML = `<div class="alert alert-${type}">${text}</div>`;
-    setTimeout(() => (msg.innerHTML = ""), 2500);
+    message.innerHTML = `<div class="alert alert-${type} rounded-0">${text}</div>`;
+    setTimeout(() => {
+        message.innerHTML = "";
+    }, 3500);
+}
+
+function formToObject(form) {
+    return Object.fromEntries(new FormData(form).entries());
+}
+
+async function requestJson(url, options = {}) {
+    const res = await fetch(url, options);
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.message || data.error || "Request failed");
+    }
+
+    return data;
+}
+
+function authHeaders() {
+    if (!currentUser) {
+        return {};
+    }
+
+    return {
+        role: currentUser.role,
+        "user-id": currentUser.id
+    };
+}
+
+function updateSession() {
+    if (!currentUser) {
+        sessionInfo.textContent = "Not logged in";
+        logoutBtn.disabled = true;
+        profileBtn.disabled = true;
+        adminBtn.disabled = true;
+        return;
+    }
+
+    sessionInfo.textContent = `${currentUser.email} (${currentUser.role})`;
+    logoutBtn.disabled = false;
+    profileBtn.disabled = false;
+    adminBtn.disabled = false;
+}
+
+async function loadStatus() {
+    try {
+        const status = await requestJson("/status");
+        statusBadge.className = "badge text-bg-success";
+        statusBadge.textContent = `${status.status} | DB ${status.database}`;
+    } catch (error) {
+        statusBadge.className = "badge text-bg-danger";
+        statusBadge.textContent = "Status unavailable";
+    }
 }
 
 async function loadUsers() {
-    const res = await fetch("/api/users");
-    const users = await res.json();
+    try {
+        const users = await requestJson("/api/users");
+        userList.innerHTML = "";
 
-    userList.innerHTML = "";
-    if (!users.length) {
-        userList.innerHTML = `<div class="text-muted">No users yet.</div>`;
-        return;
+        if (!users.length) {
+            userList.innerHTML = `<div class="text-muted">No users yet.</div>`;
+            return;
+        }
+
+        users.forEach(user => {
+            const item = document.createElement("div");
+            item.className = "list-group-item";
+            item.innerHTML = `
+                <div class="fw-semibold">${user.name || user.username}</div>
+                <div class="text-muted">${user.email} | ${user.role || "user"}</div>
+            `;
+            userList.appendChild(item);
+        });
+    } catch (error) {
+        userList.innerHTML = `<div class="text-danger">${error.message}</div>`;
     }
+}
 
-    users.forEach(u => {
-        const item = document.createElement("div");
-        item.className = "list-group-item d-flex justify-content-between align-items-center";
-        item.innerHTML = `
-      <div>
-        <div class="fw-semibold">${u.name}</div>
-        <div class="text-muted">${u.email}${u.age ? " • Age " + u.age : ""}</div>
-      </div>
-      <button class="btn btn-sm btn-outline-danger">Delete</button>
-    `;
+registerForm.addEventListener("submit", async event => {
+    event.preventDefault();
 
-        item.querySelector("button").addEventListener("click", async () => {
-            await fetch(`/api/users/${u._id}`, { method: "DELETE" });
-            showMessage("User deleted", "warning");
-            loadUsers();
+    try {
+        const payload = formToObject(registerForm);
+        const data = await requestJson("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
-        userList.appendChild(item);
-    });
-}
-
-userForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(userForm);
-    const payload = Object.fromEntries(formData.entries());
-    if (payload.age === "") delete payload.age;
-
-    const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-        showMessage(data.error || "Failed to save", "danger");
-        return;
+        registerForm.reset();
+        showMessage(data.message);
+        loadUsers();
+    } catch (error) {
+        showMessage(error.message, "danger");
     }
-
-    userForm.reset();
-    showMessage("User saved!");
-    loadUsers();
 });
 
-// ORDERS
-async function loadOrders() {
-    const res = await fetch("/api/orders");
-    const orders = await res.json();
+loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
 
-    const orderList = document.getElementById("orderList");
-    orderList.innerHTML = "";
+    try {
+        const payload = formToObject(loginForm);
+        const data = await requestJson("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-    if (!orders.length) {
-        orderList.innerHTML = `<div class="text-muted small">No orders yet</div>`;
-        return;
+        currentUser = data.user;
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        loginForm.reset();
+        updateSession();
+        showMessage(data.message);
+    } catch (error) {
+        showMessage(error.message, "danger");
     }
+});
 
-    orders.forEach(order => {
-        const userName = order.user ? order.user.name : "Unknown User";
-        const productNames = order.products.map(p => p.name).join(", ");
+logoutBtn.addEventListener("click", () => {
+    currentUser = null;
+    localStorage.removeItem("currentUser");
+    profileOutput.textContent = "No profile request yet.";
+    adminOutput.textContent = "No admin request yet.";
+    updateSession();
+    showMessage("Logged out", "warning");
+});
 
-        const item = document.createElement("div");
-        item.className = "list-group-item";
-        item.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="fw-semibold">👤 ${userName}</div>
-                    <div class="text-muted small">📦 Products: ${productNames}</div>
-                    <div class="text-success small fw-bold">💰 Total: ₱${order.totalAmount.toLocaleString()}</div>
-                </div>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder('${order._id}')">Delete</button>
-            </div>
-        `;
-        orderList.appendChild(item);
-    });
-}
+profileBtn.addEventListener("click", async () => {
+    try {
+        const data = await requestJson("/api/auth/profile", {
+            headers: authHeaders()
+        });
+        profileOutput.textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        profileOutput.textContent = error.message;
+    }
+});
 
-async function deleteOrder(id) {
-    await fetch(`/api/orders/${id}`, { method: "DELETE" });
-    loadOrders();
-}
+adminBtn.addEventListener("click", async () => {
+    try {
+        const data = await requestJson("/api/auth/admin", {
+            headers: authHeaders()
+        });
+        adminOutput.textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        adminOutput.textContent = error.message;
+    }
+});
 
+refreshUsersBtn.addEventListener("click", loadUsers);
+
+updateSession();
+loadStatus();
 loadUsers();
-loadOrders();
