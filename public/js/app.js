@@ -6,8 +6,10 @@ const sessionInfo = document.getElementById("sessionInfo");
 const logoutBtn = document.getElementById("logoutBtn");
 const profileBtn = document.getElementById("profileBtn");
 const adminBtn = document.getElementById("adminBtn");
+const secureDataBtn = document.getElementById("secureDataBtn");
 const profileOutput = document.getElementById("profileOutput");
 const adminOutput = document.getElementById("adminOutput");
+const secureDataOutput = document.getElementById("secureDataOutput");
 const refreshUsersBtn = document.getElementById("refreshUsersBtn");
 const userList = document.getElementById("userList");
 
@@ -38,6 +40,10 @@ async function requestJson(url, options = {}) {
     }
 
     if (!res.ok) {
+        if (Array.isArray(data.errors)) {
+            throw new Error(data.errors.map(error => error.msg).join(", "));
+        }
+
         throw new Error(data.message || data.error || "Request failed");
     }
 
@@ -61,6 +67,7 @@ function updateSession() {
         logoutBtn.disabled = true;
         profileBtn.disabled = true;
         adminBtn.disabled = true;
+        secureDataBtn.disabled = true;
         return;
     }
 
@@ -68,6 +75,7 @@ function updateSession() {
     logoutBtn.disabled = false;
     profileBtn.disabled = false;
     adminBtn.disabled = false;
+    secureDataBtn.disabled = false;
 }
 
 async function loadStatus() {
@@ -150,6 +158,7 @@ logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("currentUser");
     profileOutput.textContent = "No profile request yet.";
     adminOutput.textContent = "No admin request yet.";
+    secureDataOutput.textContent = "No secure request yet.";
     updateSession();
     showMessage("Logged out", "warning");
 });
@@ -173,6 +182,17 @@ adminBtn.addEventListener("click", async () => {
         adminOutput.textContent = JSON.stringify(data, null, 2);
     } catch (error) {
         adminOutput.textContent = error.message;
+    }
+});
+
+secureDataBtn.addEventListener("click", async () => {
+    try {
+        const data = await requestJson("/api/auth/secure-data", {
+            headers: authHeaders()
+        });
+        secureDataOutput.textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        secureDataOutput.textContent = error.message;
     }
 });
 

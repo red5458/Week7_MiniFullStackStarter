@@ -3,7 +3,7 @@ exports.protect = (req, res, next) => {
     const userRole = req.headers.role;
 
     if (!userRole) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized access" });
     }
 
     req.user = {
