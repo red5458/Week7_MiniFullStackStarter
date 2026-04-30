@@ -1,108 +1,311 @@
+# IT 112 Mini Full-Stack Web App
 
-## Project Overview
+This project extends the Week 7 Mini Full-Stack Starter into a deployed, secured, optimized, and installable Express + MongoDB web application.
 
-This project extends the Week 7 Mini Full-Stack Starter (CRUD + MongoDB) to implement advanced data modeling using Mongoose. It introduces two new models — **Product** and **Order** — and connects them to the existing **User** model using MongoDB ObjectId references and the `populate()` method.
+Live Render URL: https://week7-minifullstackstarter.onrender.com/
 
-**Tech Stack:** Node.js · Express · MongoDB Atlas · Mongoose · Bootstrap 5
+## Tech Stack
 
-Render URL: https://week7-minifullstackstarter.onrender.com/
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Mongoose
+- bcrypt
+- express-validator
+- helmet
+- express-rate-limit
+- xss-clean
+- node-cache
+- Progressive Web App features
 
+## How to Run
 
----
-## How to Run the Project
+1. Install dependencies:
 
-### 1. Clone the repository
-### 2. Install dependencies
 ```bash
 npm install
 ```
 
-### 3. Set up your `.env` file
-Create a `.env` file in the project root:
+2. Create a `.env` file:
+
 ```env
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/week10db
+MONGO_URI=your_mongodb_connection_string
 PORT=3000
 ```
 
+3. Start the server:
 
-### 4. Start the server
 ```bash
-npm run dev
+npm start
 ```
-The app will run at `http://localhost:3000`
 
-### 5. Seed the database
+4. Open the app:
 
-To populate the database with sample data (1 user, 2 products, 1 order), run:
+```text
+http://localhost:3000
+```
+
+## Optional Seed Data
+
+Run:
+
 ```bash
-node seed.js
+npm run seed
 ```
 
-Expected output:
-```
-Connecting to MongoDB...
-Connected!
-Old data cleared.
-User created: Test User
-Products created: Laptop , Phone
-Order created! Total: 70000
+This creates:
 
-✅ Database seeded successfully!
-```
+- 1 admin user
+- 2 normal users
+- 2 products
+- 1 order
 
-> ⚠️ **Warning:** `seed.js` deletes **all existing** Users, Products, and Orders before inserting new data. Only run it when you want to reset your test data.
+Sample password:
 
----
-
-## Changes Made from Week 7 to Week 10
-
-### New Files Added
-
-| File | Description |
-|------|-------------|
-| `models/Product.js` | Product schema with `name`, `price`, `description`, and a `createdBy` field referencing a User |
-| `models/Order.js` | Order schema linking one User and an array of Products via ObjectId references |
-| `routes/products.js` | GET, POST, DELETE endpoints for products |
-| `routes/orders.js` | GET, POST, DELETE endpoints for orders — uses `populate()` on both `user` and `products` |
-| `seed.js` | One-time script that inserts a test User, two Products, and one linked Order |
-
-### Modified Files
-
-#### `server.js`
-Registered the two new routers:
-```js
-const productsRouter = require('./routes/products');
-const ordersRouter   = require('./routes/orders');
-
-app.use('/api/products', productsRouter);
-app.use('/api/orders',   ordersRouter);
+```text
+123456
 ```
 
-#### `public/index.html`
-Added a new **Order List** section below the existing Users row:
+Warning: `seed.js` clears existing Users, Products, and Orders before adding sample data.
+
+## Implemented Weeks
+
+### Week 10: Advanced Database Integration
+
+Implemented MongoDB relationships using Mongoose models.
+
+Added:
+
+- `models/Product.js`
+- `models/Order.js`
+- Product routes
+- Order routes
+- ObjectId references between Users, Products, and Orders
+- `populate()` for showing linked user/product data
+- Seed script for sample database records
+
+Main endpoints:
+
+- `GET /api/products`
+- `POST /api/products`
+- `DELETE /api/products/:id`
+- `GET /api/orders`
+- `POST /api/orders`
+- `DELETE /api/orders/:id`
+
+### Week 11: Authentication Implementation
+
+Implemented user registration, login, password hashing, and role-based access control.
+
+Added:
+
+- User authentication fields: `username`, `password`, `role`
+- Password hashing using `bcrypt`
+- Register route
+- Login route
+- Auth middleware
+- Role authorization middleware
+- Protected profile route
+- Admin-only route
+
+Main endpoints:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/profile`
+- `GET /api/auth/admin`
+
+### Week 12: Deployment to Render
+
+Prepared and deployed the application to Render with MongoDB Atlas.
+
+Implemented:
+
+- `npm start` script
+- Environment-based port using `process.env.PORT`
+- Environment-based MongoDB URI using `process.env.MONGO_URI`
+- `.env` ignored by Git
+- `/status` endpoint for deployment health checks
+- Frontend page for browser-based testing
+
+Main endpoints:
+
+- `GET /`
+- `GET /status`
+- `GET /api/health`
+
+### Week 13: Web Security Implementation
+
+Added validation, XSS protection, stronger password handling, rate limiting, and secure endpoints.
+
+Implemented:
+
+- Security headers using `helmet`
+- Input validation using `express-validator`
+- Strong password validation for registration
+- XSS sanitizing using `xss-clean`
+- Login rate limiting using `express-rate-limit`
+- Improved unauthorized route messages
+- Protected secure data route
+
+Main endpoint added:
+
+- `GET /api/auth/secure-data`
+
+Security behavior:
+
+- Empty fields are rejected
+- Invalid emails are rejected
+- Weak passwords are rejected during registration
+- Login is limited after repeated attempts
+- Script-like input is sanitized
+
+### Week 14: Performance Optimization and Caching
+
+Added caching, optimized database queries, and performance logging.
+
+Implemented:
+
+- `node-cache`
+- Shared cache utility
+- 30-second cache expiration
+- Cached `/api/users`
+- Cached `/api/products`
+- Cache invalidation on create, update, and delete
+- Query optimization with `.lean()`
+- Reduced response size with `.select()`
+- Performance logger middleware
+
+Performance behavior:
+
+- First request returns `source: "database"`
+- Next request returns `source: "cache"`
+- Logs show request duration in milliseconds
+
+Example:
+
+```json
+{
+  "source": "cache",
+  "durationMs": 0,
+  "data": []
+}
+```
+
+### Week 15: Progressive Web App
+
+Converted the app into a basic Progressive Web App.
+
+Implemented:
+
+- Web app manifest
+- 192x192 app icon
+- Service worker
+- Offline fallback page
+- Cached app shell
+- Cached selected routes
+- Installable app support
+
+PWA files:
+
+- `public/manifest.json`
+- `public/sw.js`
+- `public/offline.html`
+- `public/icon.png`
+
+Cached resources:
+
+- `/`
+- `/index.html`
+- `/offline.html`
+- `/css/styles.css`
+- `/js/app.js`
+- `/manifest.json`
+- `/icon.png`
+- `/status`
+- `/api/health`
+- `/api/users`
+
+## Frontend Features
+
+The browser UI includes:
+
+- Registration form
+- Login form
+- Current session display
+- Profile route test
+- Admin route test
+- Secure data route test
+- User list
+- Server/database status badge
+
+## API Testing
+
+Use Thunder Client or Postman.
+
+Register:
+
+```http
+POST /api/auth/register
+```
+
+Example body:
+
+```json
+{
+  "username": "sampleuser",
+  "name": "Sample User",
+  "email": "sample@test.com",
+  "password": "Password1",
+  "confirmPassword": "Password1",
+  "role": "user"
+}
+```
+
+Login:
+
+```http
+POST /api/auth/login
+```
+
+Example body:
+
+```json
+{
+  "email": "admin@test.com",
+  "password": "123456"
+}
+```
+
+Protected route testing:
+
+```http
+GET /api/auth/profile
+```
+
+Header:
+
+```text
+role: user
+```
+
+Admin route testing:
+
+```http
+GET /api/auth/admin
+```
+
+Header:
+
+```text
+role: admin
+```
+
+## PWA Screensho
+
+
 ```html
-<div class="col-12">
-  <div class="main-card shadow-sm">
-    <h5 class="mono fw-bold mb-2">// ORDER LIST</h5>
-    <p class="text-muted small mb-3">Run <code>node seed.js</code> to add sample data.</p>
-    <div id="orderList" class="list-group list-group-flush small"></div>
-  </div>
-</div>
-```
+<img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1777522049/Screenshot_2026-04-30_120555_uvokeu.png" alt="PWA Installed App Screenshot" width="600">
 
-#### `public/js/app.js`
-Added `loadOrders()` to fetch and display orders with populated data, and `deleteOrder()` for deleting an order. Both functions are called on page load alongside the existing `loadUsers()`.
-
-```js
-async function loadOrders() {
-  const res = await fetch('/api/orders');
-  const orders = await res.json();
-  // order.user and order.products are full objects, not just IDs
-  // thanks to populate() in the backend
-}
-
-async function deleteOrder(id) {
-  await fetch(`/api/orders/${id}`, { method: 'DELETE' });
-  loadOrders();
-}
+<img src="YOUR_SECOND_IMAGE_LINK_HERE" alt="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1777522097/Screenshot_2026-04-30_120748_gh1qan.png" width="600">
 ```
