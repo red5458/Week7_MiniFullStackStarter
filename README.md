@@ -301,11 +301,8 @@ Header:
 role: admin
 ```
 
-## PWA Screensho
+## PWA Screenshots
 
-
-```html
 <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1777522049/Screenshot_2026-04-30_120555_uvokeu.png" alt="PWA Installed App Screenshot" width="600">
 
-<img src="YOUR_SECOND_IMAGE_LINK_HERE" alt="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1777522097/Screenshot_2026-04-30_120748_gh1qan.png" width="600">
-```
+<img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1777522097/Screenshot_2026-04-30_120748_gh1qan.png" alt="PWA Offline Mode Screenshot" width="600">
