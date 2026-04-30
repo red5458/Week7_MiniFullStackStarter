@@ -10,6 +10,7 @@ const usersRouter = require("./routes/users");
 const productsRouter = require("./routes/products"); // NEW: Week 10
 const ordersRouter = require("./routes/orders");     // NEW: Week 10
 const authRoutes = require("./routes/authRoutes");    // NEW: Week 11
+const { logger } = require("./middleware/logger");    // NEW: Week 14
 
 const app = express();
 
@@ -24,6 +25,7 @@ const loginLimiter = rateLimit({
 });
 
 app.use(helmet());
+app.use(logger);
 
 // Body parsers (required so req.body will not be undefined)
 app.use(express.json());

@@ -91,7 +91,9 @@ async function loadStatus() {
 
 async function loadUsers() {
     try {
-        const users = await requestJson("/api/users");
+        const response = await requestJson("/api/users");
+        const users = Array.isArray(response) ? response : response.data;
+
         userList.innerHTML = "";
 
         if (!users.length) {

@@ -17,9 +17,11 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("user")        // replaces user ID with actual user data
-      .populate("products")    // replaces product IDs with actual product data
-      .sort({ createdAt: -1 });
+      .select("user products totalAmount createdAt")
+      .populate("user", "username name email role")        // replaces user ID with selected user data
+      .populate("products", "name price description")    // replaces product IDs with selected product data
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(orders);
   } catch (err) {
     res.status(500).json({ error: err.message });

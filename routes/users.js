@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const cache = require("../utils/cache");
+
+const USERS_CACHE_KEY = "users";
 
 // CREATE
 router.post("/", async (req, res) => {
@@ -15,6 +18,8 @@ router.post("/", async (req, res) => {
         }
 
         const user = await User.create(req.body);
+        cache.del(USERS_CACHE_KEY);
+
         const safeUser = user.toObject();
         delete safeUser.password;
 
@@ -26,8 +31,29 @@ router.post("/", async (req, res) => {
 
 // READ ALL
 router.get("/", async (req, res) => {
-    const users = await User.find().select("-password").sort({ createdAt: -1 });
-    return res.json(users);
+    const start = Date.now();
+    const cachedUsers = cache.get(USERS_CACHE_KEY);
+
+    if (cachedUsers) {
+        return res.json({
+            source: "cache",
+            durationMs: Date.now() - start,
+            data: cachedUsers
+        });
+    }
+
+    const users = await User.find()
+        .select("username name email role age createdAt")
+        .sort({ createdAt: -1 })
+        .lean();
+
+    cache.set(USERS_CACHE_KEY, users);
+
+    return res.json({
+        source: "database",
+        durationMs: Date.now() - start,
+        data: users
+    });
 });
 
 // UPDATE
@@ -38,6 +64,8 @@ router.put("/:id", async (req, res) => {
         }
 
         const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        cache.del(USERS_CACHE_KEY);
+
         if (updated) {
             updated.password = undefined;
         }
@@ -52,6 +80,8 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
+        cache.del(USERS_CACHE_KEY);
+
         return res.json({ message: "User deleted" });
     } catch (err) {
         return res.status(400).json({ error: err.message });
