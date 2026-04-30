@@ -6,6 +6,7 @@ require("dotenv").config();
 const usersRouter = require("./routes/users");
 const productsRouter = require("./routes/products"); // NEW: Week 10
 const ordersRouter = require("./routes/orders");     // NEW: Week 10
+const authRoutes = require("./routes/authRoutes");    // NEW: Week 11
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // API routes
+app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRouter);
 app.use("/api/products", productsRouter); // NEW: Week 10
 app.use("/api/orders", ordersRouter);     // NEW: Week 10
