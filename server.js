@@ -14,6 +14,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Homepage route for deployment check
+app.get("/", (req, res) => {
+    res.send("Welcome to My Deployed App");
+});
+
 // Serve frontend
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -25,6 +30,16 @@ app.use("/api/orders", ordersRouter);     // NEW: Week 10
 
 // Test route
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// Deployment status route
+app.get("/status", (req, res) => {
+    res.json({
+        status: "running",
+        database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
 
 // Mongo connect + start server
 async function start() {
